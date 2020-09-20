@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7331225889317773874
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7331225889317773872}
+  - component: {fileID: 7331225889317773875}
+  - component: {fileID: 7331225889317773873}
+  m_Layer: 0
+  m_Name: GamePlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7331225889317773872
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7331225889317773874}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -78.3, y: 15.9, z: -18.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7331225889317773875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7331225889317773874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f6e9f16789b17c4db32ffe22710e757, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Ball: {fileID: 8095894971193060833, guid: 53908dbe2cf3c864885dc4ddf287aebb, type: 3}
+  Cube: {fileID: 5797980989115940593, guid: d44cdbd805aefb848926ede4a74d0851, type: 3}
+  ObjectCountText: {fileID: 0}
+  ObjectCount2Text: {fileID: 0}
+  destroyText: {fileID: 0}
+  destroyedBall: 0
+  sound: {fileID: 7331225889317773873}
+  randomObject: 1
+  Task: 1
+--- !u!114 &7331225889317773873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7331225889317773874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 814f728c725eda542ab4939f660271db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioSource: {fileID: 7596628902783979961, guid: 6cc12245b6555e5499a35287d2a96e51,
+    type: 3}
+  ballSpawn: {fileID: 8300000, guid: af1fc230ad2fff34392b6fc39a09de4c, type: 3}
+  ballPop: {fileID: 8300000, guid: d06376e73064bcd448d1f931e2fab0d9, type: 3}
