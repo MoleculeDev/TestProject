@@ -15,6 +15,9 @@ public class Player : MonoBehaviour
     public GameObject pointer;
     public List<GameObject> itemList;
 
+    [Header("Transorms and Positions")]
+    public List<Transform> itemHandleTransfroms;
+
     public NavMeshAgent navMeshAgent;
     
     [Header("Bools")]
@@ -34,6 +37,7 @@ public class Player : MonoBehaviour
     GamePlayController gamePlayController;
 
     [Header("Floats & Ints")]
+    public float maxHealth;
     public int handMaxContains;
     public float speed;
     public float rotationSpeed;
@@ -53,6 +57,14 @@ public class Player : MonoBehaviour
         rb = gameObject.GetComponent<Rigidbody>();
         mainCamera = Camera.main;
         gamePlayController = GameObject.FindGameObjectWithTag("GPC").GetComponent<GamePlayController>();
+        SetProperties();
+    }
+
+    void SetProperties()
+    {
+        handMaxContains = gamePlayController.gameData.playerMaxContains;
+        maxHealth = gamePlayController.gameData.playerMaxHealth;
+        speed = gamePlayController.gameData.playerSpeed;
     }
 
 
@@ -62,15 +74,35 @@ public class Player : MonoBehaviour
     }
     private void OnTriggerStay(Collider other)
     {
+        if (other.CompareTag("ItemGenerator") && onZone && itemList.Count < handMaxContains) 
+        {
+            ItemGenerator itemGenerator = other.gameObject.GetComponentInParent<ItemGenerator>();
+            StartCoroutine(MoveToHand(itemList, itemGenerator.itemsList, itemHandleTransfroms, "Item"));
+        }
 
+        if (other.CompareTag("ItemReciever") && onZone && itemList.Count > 0)
+        {
+            ItemGenerator itemGenerator = other.gameObject.GetComponentInParent<ItemGenerator>();
+
+            if (itemGenerator.itemsList.Count < itemGenerator.itemTransforms.Count) 
+            {
+                StartCoroutine(PutFromHand(itemGenerator.itemsList, itemList, itemGenerator.itemTransforms, "Item"));
+            } 
+            
+        }
     }
     private void OnTriggerEnter(Collider other)
     {
+        if (other.CompareTag("ItemGenerator")) onZone = true;
+        if (other.CompareTag("ItemReciever")) onZone = true;
 
     }
     private void OnTriggerExit(Collider other)
     {
-
+        if (other.CompareTag("ItemGenerator"))
+        {
+            onZone = false;
+        }
     }
 
 
@@ -186,33 +218,50 @@ public class Player : MonoBehaviour
         #endregion
 
     }
-    IEnumerator PutFromHand(GameObject gameObject, Transform transform, Vector3 position, List<GameObject> listOf)
+    IEnumerator PutFromHand(List<GameObject> listTo, List<GameObject> listFrom, List<Transform> positionList, string type)
     {
-
-        puting = true;
-        float time = 0;
-        gameObject.transform.SetParent(transform.transform, true);
-        gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
-        Vector3 startPosition = gameObject.transform.localPosition;
-
-        while (time <= 0.2f)
+        #region taking
+        if (listFrom.Count > 0 && onZone && !taking)
         {
-            gameObject.transform.localPosition = Vector3.Lerp(startPosition, position, time / 0.2f);
-            time += Time.deltaTime;
+            float time = 0;
+            taking = true;
+            GameObject gameObject = listFrom[listFrom.Count - 1];
+            gameObject.transform.SetParent(positionList[listTo.Count], true);
+            gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+            
+            Vector3 startPosition = gameObject.transform.localPosition;
+            Vector3 offSetPosition = startPosition + new Vector3(0, Random.Range(2, 5), 0);
+            gamePlayController.soundManager.ItemTake(listTo.Count);
 
-            if (time > 0.2f)
+            Vector3 destination = new Vector3(0, 0, 0);
+
+            while (time <= 0.1f)
             {
-                listOf.Remove(gameObject);
-                puting = false;
+                gameObject.transform.localPosition = Vector3.Lerp(startPosition, offSetPosition, time / 0.1f);
+                time += Time.deltaTime;
+                yield return null;
             }
 
-            yield return new WaitForFixedUpdate();
+            time = 0;
+
+            while (time <= 0.1f)
+            {
+                gameObject.transform.localPosition = Vector3.Lerp(offSetPosition, destination, time / 0.1f);
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+            taking = false;
+            gameObject.transform.localPosition = destination;
+            listTo.Add(gameObject);
+            listFrom.Remove(gameObject);
+
         }
 
-        gamePlayController.PoofEffect(gameObject.transform.position);
-        
-        gameObject.transform.localPosition = position;
+        #endregion
+
     }
+
 
     void FixedUpdate()
     {
@@ -263,18 +312,23 @@ public class Player : MonoBehaviour
 
                 if ((hoz > 0.8f || hoz < -0.8f) || (ver > 0.8f || ver < -0.8f))
                 {
-                    if (itemList.Count > 0)
-                    {
-                        animator.ResetTrigger("Walk");
-                        animator.SetTrigger("Run");
-                    }
-                    else
-                    {
-                        animator.SetTrigger("Run");
-                        animator.ResetTrigger("Idle");
-                        animator.ResetTrigger("Walk");
-                    }
+                    animator.SetTrigger("Run");
+                    animator.ResetTrigger("Idle");
+                    animator.ResetTrigger("Walk");
 
+                    #region with items
+                    //if (itemList.Count > 0)
+                    //{
+                    //    animator.ResetTrigger("Walk");
+                    //    animator.SetTrigger("Run");
+                    //}
+                    //else
+                    //{
+                    //    animator.SetTrigger("Run");
+                    //    animator.ResetTrigger("Idle");
+                    //    animator.ResetTrigger("Walk");
+                    //}
+                    #endregion
                 }
 
                 navMeshAgent.transform.rotation = Quaternion.LookRotation(navMeshAgent.velocity);
@@ -282,15 +336,23 @@ public class Player : MonoBehaviour
             else if (hoz == 0 && ver == 0)
             {
                 animator.ResetTrigger("Run");
+                animator.ResetTrigger("Walk");
+                animator.SetTrigger("Idle");
                 //animator.ResetTrigger("Run_Tray");
 
-                if (itemList.Count > 0) animator.SetTrigger("Idle_Tray");
-                else animator.SetTrigger("Idle");
+                #region with items
+                //if (itemList.Count > 0) animator.SetTrigger("Idle_Tray");
+                //else animator.SetTrigger("Idle");
+                #endregion 
             }
         }
         
     }
 
+    public void FootStepSound() 
+    {
+        gamePlayController.soundManager.FootStep();
+    }
 
     #region Pointer
     //Target position pointer

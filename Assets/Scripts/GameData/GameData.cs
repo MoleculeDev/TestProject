@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 
+[System.Serializable]
 public class GameData 
 {
     //Main values
@@ -8,6 +9,7 @@ public class GameData
 
     //Player values
     public Vector3 playerPosition;
+    public int playerMaxContains;
     public int playerMaxHealth;
     public int playerLevel;
     public int playerSpeed;
