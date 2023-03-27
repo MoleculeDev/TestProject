@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
 
     [Header("Transorms and Positions")]
     public List<Transform> itemHandleTransfroms;
+    public Transform moneyTakingPosition;
 
     public NavMeshAgent navMeshAgent;
     
@@ -27,6 +28,7 @@ public class Player : MonoBehaviour
     public bool buying;
     public bool puting;
     public bool moneyTaking;
+    public bool itemTransforming;
     public bool coroutineIsActive;
     bool onZone;
 
@@ -35,6 +37,7 @@ public class Player : MonoBehaviour
 
     [Header("Scripts")]
     GamePlayController gamePlayController;
+    public InventoryHandler inventory;
 
     [Header("Floats & Ints")]
     public float maxHealth;
@@ -88,7 +91,14 @@ public class Player : MonoBehaviour
             {
                 StartCoroutine(PutFromHand(itemGenerator.itemsList, itemList, itemGenerator.itemTransforms, "Item"));
             } 
-            
+        }
+
+        if (other.CompareTag("MoneyHolder")) 
+        {
+            if (!moneyTaking && other.gameObject.GetComponentInParent<ItemGenerator>().moneyList.Count > 0)
+            {
+                StartCoroutine(GetMoney(other.gameObject.GetComponentInParent<ItemGenerator>().moneyList, other.gameObject));
+            }
         }
     }
     private void OnTriggerEnter(Collider other)
@@ -261,7 +271,87 @@ public class Player : MonoBehaviour
         #endregion
 
     }
+    IEnumerator GetMoney(List<GameObject> moneyList, GameObject referenceObject) 
+    {
+        moneyTaking = true;
 
+        //for (int i = 0; i < moneyList.Count; i++)
+        //{
+        //    StartCoroutine(TransformingMoney(moneyList[i], moneyList));
+        //}
+
+        gamePlayController.soundManager.MoneyBill();
+
+        while (moneyList.Count > 0) 
+        {
+            StartCoroutine(TransformingMoney(moneyList[moneyList.Count - 1], moneyList));
+
+            yield return new WaitUntil(() => !itemTransforming);
+        }
+
+        float time = 0;
+        int startMoney = gamePlayController.gameData.money;
+        int endMoney = gamePlayController.gameData.money + referenceObject.GetComponentInParent<ItemGenerator>().recievedMoney;
+        int currentMoney;
+        //gamePlayController.moneyText_Parent.GetComponent<Animator>().SetTrigger("Scale");
+        gamePlayController.soundManager.MoneyBill();
+
+        while (time < 1)
+        {
+            currentMoney = (int)Mathf.Lerp(startMoney, endMoney, time / 1);
+            gamePlayController.moneyText.text = currentMoney.ToString();
+            time += Time.deltaTime;
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        gamePlayController.gameData.money += referenceObject.GetComponentInParent<ItemGenerator>().recievedMoney;
+        referenceObject.GetComponentInParent<ItemGenerator>().recievedMoney = 0;
+        moneyTaking = false;
+    }
+    public IEnumerator TransformingMoney(GameObject gameObject, List<GameObject> moneyList)
+    {
+        //yield return new WaitForSeconds(0.5f);
+        itemTransforming = true;
+
+        Vector3 startPosition = gameObject.transform.position;
+        Vector3 destination = moneyTakingPosition.position;
+        Vector3 offsetPosition = destination + new Vector3(0, 2, 0);
+
+        #region
+        float time = 0;
+        while (time < 0.03f)
+        {
+            gameObject.transform.position = Vector3.Lerp(startPosition, offsetPosition, time / 0.03f);
+            time += Time.deltaTime;
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        time = 0;
+
+        destination = moneyTakingPosition.position;
+        
+        //offsetPosition = destination + new Vector3(Random.Range(-3.0f, 3.0f), Random.Range(-3.0f, 3.0f), Random.Range(-3.0f, 3.0f));
+
+        while (time < 0.03f)
+        {
+            gameObject.transform.position = Vector3.Lerp(offsetPosition, destination, time / 0.03f);
+            time += Time.deltaTime;
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        moneyList.Remove(gameObject);
+        Destroy(gameObject);
+        itemTransforming = false;
+        #endregion
+    }
+
+    IEnumerator AddToInventory() 
+    {
+        yield return null;
+    }
 
     void FixedUpdate()
     {
@@ -310,7 +400,7 @@ public class Player : MonoBehaviour
                     animator.ResetTrigger("Idle");
                 }
 
-                if ((hoz > 0.8f || hoz < -0.8f) || (ver > 0.8f || ver < -0.8f))
+                if ((hoz > 0.7f || hoz < -0.7f) || (ver > 0.7f || ver < -0.7f))
                 {
                     animator.SetTrigger("Run");
                     animator.ResetTrigger("Idle");
@@ -349,6 +439,10 @@ public class Player : MonoBehaviour
         
     }
 
+    
+    /// <summary>
+    /// FootstepSound player
+    /// </summary>
     public void FootStepSound() 
     {
         gamePlayController.soundManager.FootStep();

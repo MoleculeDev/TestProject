@@ -10,6 +10,7 @@ public class SoundManager : MonoBehaviour
 
     public AudioClip[] itemTake;
     public AudioClip[] footSteps;
+    public AudioClip moneyBill;
 
     //private void Start()
     //{
@@ -27,6 +28,11 @@ public class SoundManager : MonoBehaviour
     public void FootStep() 
     {
         soundSource.PlayOneShot(footSteps[Random.Range(0, footSteps.Length)]);
+    }
+
+    public void MoneyBill() 
+    {
+        soundSource.PlayOneShot(moneyBill);
     }
 
 }
