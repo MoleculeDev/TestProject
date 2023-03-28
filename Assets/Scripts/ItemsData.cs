@@ -5,6 +5,14 @@ using UnityEngine;
 [System.Serializable]
 public class ItemsData 
 {
-    public ItemCreator itemsList;
+    public List<Item> itemsList;
+}
+
+[System.Serializable]
+public class Item 
+{
+    public string itemName;
+    public int itemCost;
     public int countOfItem;
+    public Sprite itemSprite;
 }

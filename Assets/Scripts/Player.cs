@@ -30,6 +30,7 @@ public class Player : MonoBehaviour
     public bool moneyTaking;
     public bool itemTransforming;
     public bool coroutineIsActive;
+    public bool collectingResource;
     bool onZone;
 
     [Header("UI")]
@@ -73,7 +74,10 @@ public class Player : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        
+        if (collision.gameObject.tag == "Wood" && !taking) 
+        {
+            StartCoroutine(CollectResource(collision.gameObject));
+        }
     }
     private void OnTriggerStay(Collider other)
     {
@@ -115,7 +119,54 @@ public class Player : MonoBehaviour
         }
     }
 
+    IEnumerator CollectResource(GameObject collectable) 
+    {
 
+        #region Collecting Resource
+        taking = true;
+
+        float time = 0;
+        collectable.transform.SetParent(itemHandleTransfroms[0], true);
+        Vector3 startPosition = gameObject.transform.localPosition;
+        Vector3 offSetPosition = startPosition + new Vector3(0, Random.Range(2, 5), 0);
+        Vector3 destination = new Vector3(0, 0, 0);
+
+        gamePlayController.soundManager.ItemTake(Random.Range(0,6));
+
+        while (time <= 0.1f)
+        {
+            collectable.transform.localPosition = Vector3.Lerp(startPosition, offSetPosition, time / 0.1f);
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        time = 0;
+
+        while (time <= 0.1f)
+        {
+            collectable.transform.localPosition = Vector3.Lerp(offSetPosition, destination, time / 0.1f);
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        #endregion
+
+        string type = collectable.gameObject.tag;
+
+        for (int i = 0; i < inventory.itemsData.itemsList.Count; i++)
+        {
+            if (type == inventory.itemsData.itemsList[i].itemName) 
+            {
+                inventory.itemsData.itemsList[i].countOfItem++;
+            }
+        }
+
+        Destroy(collectable);
+        gamePlayController.saveController.SaveInvetory();
+        taking = false;
+
+        yield return null;
+    }
     IEnumerator PutToTrash(Transform trashPos, GameObject trash, List<GameObject> objectsList)
     {
         puting = true;

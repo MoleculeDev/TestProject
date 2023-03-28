@@ -9,16 +9,16 @@ public class SaveController : MonoBehaviour
     private void Awake()
     {
         SaveSystem.Initialize();
-        SaveSystem.LoadInventory();
     }
     private void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        LoadInventory();
     }
 
     public void SaveInvetory() 
     {
-        string inventoryData = JsonUtility.ToJson(player.inventory);
+        string inventoryData = JsonUtility.ToJson(player.inventory.itemsData);
         SaveSystem.SaveInventory(inventoryData);
         print("Inventory Saved");
     }
@@ -29,7 +29,7 @@ public class SaveController : MonoBehaviour
 
         if (inventory != null)
         {
-            player.inventory = JsonUtility.FromJson<InventoryHandler>(inventory);
+            player.inventory.itemsData = JsonUtility.FromJson<ItemsData>(inventory);
             print("Inventory Loaded");
         }
 
